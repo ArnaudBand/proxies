@@ -1,28 +1,31 @@
-const {
-  time,
-  loadFixture,
-} = require("@nomicfoundation/hardhat-toolbox/network-helpers");
-const { anyValue } = require("@nomicfoundation/hardhat-chai-matchers/withArgs");
+const {loadFixture} = require("@nomicfoundation/hardhat-toolbox/network-helpers");
+// const { anyValue } = require("@nomicfoundation/hardhat-chai-matchers/withArgs");
 const { expect } = require("chai");
 
 describe("Lock", function () {
-  // We define a fixture to reuse the same setup in every test.
-  // We use loadFixture to run this setup once, snapshot that state,
-  // and reset Hardhat Network to that snapshot in every test.
-  async function deployOneYearLockFixture() {
-    const ONE_YEAR_IN_SECS = 365 * 24 * 60 * 60;
-    const ONE_GWEI = 1_000_000_000;
+  async function deployFixture() {
+    const Proxies = await ethers.getContractFactory("Proxies");
+    const proxies = await Proxies.deploy();
 
-    const lockedAmount = ONE_GWEI;
-    const unlockTime = (await time.latest()) + ONE_YEAR_IN_SECS;
+    const Logic1 = await ethers.getContractFactory("Logic1");
+    const logic1 = await Logic1.deploy();
 
-    // Contracts are deployed using the first signer/account by default
-    const [owner, otherAccount] = await ethers.getSigners();
+    const Logic2 = await ethers.getContractFactory("Logic2");
+    const logic2 = await Logic2.deploy();
 
-    const Lock = await ethers.getContractFactory("Lock");
-    const lock = await Lock.deploy(unlockTime, { value: lockedAmount });
-
-    return { lock, unlockTime, lockedAmount, owner, otherAccount };
+    return { proxies, logic1, logic2 };
   }
+
+  it("should change the value for Logic1", async function () {
+    const { proxies, logic1 } = await loadFixture(deployFixture);
+
+    await proxies.changeImplementation(logic1.address);
+
+    expect.equal(await logic1.x(), 0);
+
+    await proxies.changeX(52);
+
+    expect.equal(await logic1.x(), 52);
+  })
 
 });
