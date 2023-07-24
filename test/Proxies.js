@@ -28,4 +28,21 @@ describe("Lock", function () {
     assert.equal(await logic1.x(), 52);
   })
 
+  it("should work with upgrade", async function() {
+    const { proxies, logic1, logic2 } = await loadFixture(deployFixture);
+
+    await proxies.changeImplementation(logic1);
+    assert.equal(await logic1.x(), 0);
+
+    await proxies.changeX(45);
+    assert.equal(await logic1.x(), 45);
+
+
+    await proxies.changeImplementation(logic2);
+    assert.equal(await logic2.x(), 0);
+
+    await proxies.changeX(52);
+    assert.equal(await logic2.x(), 52);
+  })
+
 });
