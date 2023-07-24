@@ -1,0 +1,12 @@
+{
+  "name": "proxies",
+  "version": "1.0.0",
+  "description": "Smart contract proxies allow one contract to execute code on behalf of another contract.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
