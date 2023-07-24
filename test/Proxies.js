@@ -1,6 +1,6 @@
 const {loadFixture} = require("@nomicfoundation/hardhat-toolbox/network-helpers");
 // const { anyValue } = require("@nomicfoundation/hardhat-chai-matchers/withArgs");
-const { expect } = require("chai");
+const { assert } = require("chai");
 
 describe("Lock", function () {
   async function deployFixture() {
@@ -19,13 +19,13 @@ describe("Lock", function () {
   it("should change the value for Logic1", async function () {
     const { proxies, logic1 } = await loadFixture(deployFixture);
 
-    await proxies.changeImplementation(logic1.address);
+    await proxies.changeImplementation(logic1);
 
-    expect.equal(await logic1.x(), 0);
+    assert.equal(await logic1.x(), 0);
 
     await proxies.changeX(52);
 
-    expect.equal(await logic1.x(), 52);
+    assert.equal(await logic1.x(), 52);
   })
 
 });
