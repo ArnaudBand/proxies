@@ -13,36 +13,41 @@ describe("Lock", function () {
     const Logic2 = await ethers.getContractFactory("Logic2");
     const logic2 = await Logic2.deploy();
 
-    return { proxies, logic1, logic2 };
+    const proxyAsLogic1 = await ethers.getContractAt("Logic1", proxies);
+    const proxyAsLogic2 = await ethers.getContractAt("Logic2", proxies);
+
+    return { proxies, logic1, logic2, proxyAsLogic1, proxyAsLogic2 };
+  };
+
+  async function lookupUint(address, slot) {
+    const storage = await ethers.provider.getStorageAt(address, slot);
+    return parseInt(storage, 16);
   }
 
   it("should change the value for Logic1", async function () {
-    const { proxies, logic1 } = await loadFixture(deployFixture);
+    const { proxies, proxyAsLogic1, logic1 } = await loadFixture(deployFixture);
 
     await proxies.changeImplementation(logic1);
 
-    assert.equal(await logic1.x(), 0);
+    assert.equal(await logic1.x(), 0); // Change this line to use proxyAsLogic1
 
-    await proxies.changeX(52);
+    await proxyAsLogic1.changeX(52); // Add await here
 
-    assert.equal(await logic1.x(), 52);
-  })
+    assert.equal(await logic1.x(), 52); // Change this line to use proxyAsLogic1
+  });
 
-  it("should work with upgrade", async function() {
-    const { proxies, logic1, logic2 } = await loadFixture(deployFixture);
-
+  it('should upgrade logic2', async function () {
+    const { proxies, proxyAsLogic1, proxyAsLogic2, logic2, logic1 } = await loadFixture(deployFixture);
     await proxies.changeImplementation(logic1);
     assert.equal(await logic1.x(), 0);
-
-    await proxies.changeX(45);
+    await proxyAsLogic1.changeX(45);
     assert.equal(await logic1.x(), 45);
-
 
     await proxies.changeImplementation(logic2);
     assert.equal(await logic2.x(), 0);
-
-    await proxies.changeX(52);
-    assert.equal(await logic2.x(), 52);
+    await proxyAsLogic2.changeX(25);
+    await proxyAsLogic2.tripleX();
+    assert.equal(await logic2.x(), 75);
   })
 
 });
